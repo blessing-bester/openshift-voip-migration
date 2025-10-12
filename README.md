@@ -1,4 +1,4 @@
-# OpenShift Production Platform
+# OpenShift/ K8s Platform
 
 <!-- Badges -->
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
@@ -6,18 +6,18 @@
 ![GitOps](https://img.shields.io/badge/gitops-argocd-blue)
 ![CI/CD](https://img.shields.io/badge/tekton-pipelines-orange)
 ![Maintained](https://img.shields.io/badge/maintained-yes-green)
-![CI](https://github.com/yourusername/openshift-production-platform/actions/workflows/ci.yml/badge.svg)
-
 ---
 
 ## 📖 Overview
-This repository provides a **production-ready OpenShift platform** design using **GitOps with ArgoCD**, **Tekton CI/CD pipelines**, and **comprehensive monitoring** with Prometheus, Grafana, and Alertmanager.  
+This repository provides an **OpenShift platform** design using **GitOps with ArgoCD**, **Tekton CI/CD pipelines**, and **monitoring** with Prometheus, Grafana, and Alertmanager.  
+
+The same can also be applied to a kubernetes cluster.
 
 It is designed to showcase **99.95% uptime architecture** principles, automation-first deployment, and cloud-native observability.  
 
-**Problem:** Many OpenShift/Kubernetes environments lack a consistent, automated GitOps-driven workflow and reliable monitoring setup.  
+**Problem Statement:** Many OpenShift/Kubernetes environments lack a consistent, automated GitOps-driven workflow and reliable monitoring setup.  
 
-**Solution:** This project provides a **modular reference implementation** with reusable manifests, pipelines, and monitoring configurations — deployable on **OpenShift CRC (local dev)** or **Red Hat OpenShift Sandbox (cloud)**.  
+**Solution:** This project provides a **modular reference implementation** with reusable manifests, pipelines, and monitoring configurations — deployable on **OpenShift CRC (local dev)** or **Red Hat OpenShift Sandbox (cloud)** or **K3/K8 setup**.  
 
 ---
 
@@ -33,7 +33,7 @@ It is designed to showcase **99.95% uptime architecture** principles, automation
 
 ## 🏗️ Architecture
 
-![Architecture Diagram](./docs/architecture.png)
+![Architecture Diagram](./docs/diagrams/architecture.mermaid)
 
 **Flow:**  
 1. Developer pushes code → GitHub  

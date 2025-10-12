@@ -1,0 +1,54 @@
+graph TB
+    subgraph "Data Sources"
+        APP1[App Pod 1]
+        APP2[App Pod 2]
+        APP3[App Pod 3]
+        NODE1[Node Metrics]
+        NODE2[Cluster Metrics]
+        TEKTON[Tekton Metrics]
+        ARGO[ArgoCD Metrics]
+    end
+    
+    subgraph "Collection Layer"
+        APP1 -->|:8080/metrics| PROM[Prometheus Server]
+        APP2 -->|:8080/metrics| PROM
+        APP3 -->|:8080/metrics| PROM
+        NODE1 -->|node_exporter| PROM
+        NODE2 -->|kube-state-metrics| PROM
+        TEKTON -->|metrics| PROM
+        ARGO -->|metrics| PROM
+    end
+    
+    subgraph "Storage"
+        PROM -->|TSDB| STORAGE[Time Series Database]
+    end
+    
+    subgraph "Visualization"
+        STORAGE -->|query| GRAF[Grafana]
+        GRAF --> DASH1[Cluster Dashboard]
+        GRAF --> DASH2[Application Dashboard]
+        GRAF --> DASH3[Tekton Dashboard]
+        GRAF --> DASH4[ArgoCD Dashboard]
+    end
+    
+    subgraph "Alerting"
+        PROM -->|firing alerts| ALERT[Alertmanager]
+        ALERT -->|route| EMAIL[Email]
+        ALERT -->|route| SLACK[Slack]
+        ALERT -->|route| PAGER[PagerDuty]
+    end
+    
+    subgraph "Users"
+        DASH1 --> OPS[Operations Team]
+        DASH2 --> DEV[Development Team]
+        DASH3 --> DEV
+        DASH4 --> OPS
+        EMAIL --> OPS
+        SLACK --> DEV
+        PAGER --> OPS
+    end
+    
+    style PROM fill:#e6522c
+    style GRAF fill:#f46800
+    style ALERT fill:#ff6b6b
+    style STORAGE fill:#4a4a4a

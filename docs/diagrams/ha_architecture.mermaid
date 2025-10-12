@@ -1,0 +1,78 @@
+graph TB
+    subgraph "Load Balancer Layer"
+        LB[Load Balancer / Router]
+    end
+    
+    subgraph "OpenShift Control Plane - HA"
+        MASTER1[Master Node 1<br/>API Server, Scheduler]
+        MASTER2[Master Node 2<br/>API Server, Scheduler]
+        MASTER3[Master Node 3<br/>API Server, Scheduler]
+        ETCD1[etcd 1]
+        ETCD2[etcd 2]
+        ETCD3[etcd 3]
+        
+        MASTER1 -.->|cluster state| ETCD1
+        MASTER2 -.->|cluster state| ETCD2
+        MASTER3 -.->|cluster state| ETCD3
+    end
+    
+    subgraph "Worker Nodes - Application Layer"
+        subgraph "Zone A"
+            WORKER1[Worker Node 1]
+            POD1A[App Pod Replica 1]
+            POD1B[Monitoring Pod]
+            WORKER1 --> POD1A
+            WORKER1 --> POD1B
+        end
+        
+        subgraph "Zone B"
+            WORKER2[Worker Node 2]
+            POD2A[App Pod Replica 2]
+            POD2B[ArgoCD Pod]
+            WORKER2 --> POD2A
+            WORKER2 --> POD2B
+        end
+        
+        subgraph "Zone C"
+            WORKER3[Worker Node 3]
+            POD3A[App Pod Replica 3]
+            POD3B[Tekton Pod]
+            WORKER3 --> POD3A
+            WORKER3 --> POD3B
+        end
+    end
+    
+    subgraph "Storage Layer - Persistent"
+        PV1[Persistent Volume 1<br/>Replicated Storage]
+        PV2[Persistent Volume 2<br/>Replicated Storage]
+        PV3[Persistent Volume 3<br/>Replicated Storage]
+    end
+    
+    LB -->|distribute traffic| MASTER1
+    LB -->|distribute traffic| MASTER2
+    LB -->|distribute traffic| MASTER3
+    
+    MASTER1 -->|schedule| WORKER1
+    MASTER2 -->|schedule| WORKER2
+    MASTER3 -->|schedule| WORKER3
+    
+    POD1A -.->|data| PV1
+    POD2A -.->|data| PV2
+    POD3A -.->|data| PV3
+    
+    subgraph "Backup & DR"
+        BACKUP[Velero Backup]
+        POD1A -.->|backup| BACKUP
+        POD2A -.->|backup| BACKUP
+        POD3A -.->|backup| BACKUP
+        BACKUP -.->|restore| DR[DR Site]
+    end
+    
+    style LB fill:#4a90e2
+    style MASTER1 fill:#ff6b6b
+    style MASTER2 fill:#ff6b6b
+    style MASTER3 fill:#ff6b6b
+    style POD1A fill:#2ecc71
+    style POD2A fill:#2ecc71
+    style POD3A fill:#2ecc71
+    style BACKUP fill:#f39c12

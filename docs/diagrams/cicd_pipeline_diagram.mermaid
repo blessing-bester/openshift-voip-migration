@@ -1,0 +1,38 @@
+graph LR
+    subgraph "Trigger"
+        A[Git Push/PR] -->|webhook| B[EventListener]
+        B --> C[TriggerBinding]
+        C --> D[TriggerTemplate]
+    end
+    
+    subgraph "Pipeline Stages"
+        D --> E[Clone Repository]
+        E --> F[Run Tests]
+        F --> G{Tests Pass?}
+        G -->|No| H[Fail Pipeline]
+        G -->|Yes| I[Build Image]
+        I --> J[Security Scan]
+        J --> K{Vulnerabilities?}
+        K -->|Critical| L[Block Deployment]
+        K -->|Pass| M[Push to Registry]
+        M --> N[Update Manifests]
+        N --> O[Commit to GitOps Repo]
+    end
+    
+    subgraph "Deployment"
+        O -->|ArgoCD detects| P[Sync Application]
+        P --> Q[Deploy to OpenShift]
+        Q --> R[Health Checks]
+        R --> S{Healthy?}
+        S -->|No| T[Rollback]
+        S -->|Yes| U[Deployment Complete]
+    end
+    
+    style A fill:#4a90e2
+    style G fill:#ffd700
+    style K fill:#ffd700
+    style S fill:#ffd700
+    style H fill:#e74c3c
+    style L fill:#e74c3c
+    style T fill:#e74c3c
+    style U fill:#2ecc71

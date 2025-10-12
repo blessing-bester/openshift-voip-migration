@@ -1,0 +1,43 @@
+graph TB
+    subgraph "Git Repositories"
+        APP_REPO[Application Code Repo]
+        GITOPS_REPO[GitOps Config Repo]
+    end
+    
+    subgraph "Developer Actions"
+        DEV[Developer] -->|commits code| APP_REPO
+        OPS[Platform Engineer] -->|updates manifests| GITOPS_REPO
+    end
+    
+    subgraph "ArgoCD"
+        GITOPS_REPO -->|polls every 3min| ARGO[ArgoCD Controller]
+        ARGO -->|compares| DESIRED[Desired State<br/>Git]
+        ARGO -->|compares| CURRENT[Current State<br/>OpenShift]
+        DESIRED -.->|diff| SYNC_DECISION{Out of Sync?}
+        CURRENT -.->|diff| SYNC_DECISION
+    end
+    
+    subgraph "OpenShift Cluster"
+        SYNC_DECISION -->|Yes - Auto Sync| APPLY[Apply Changes]
+        SYNC_DECISION -->|No| HEALTHY[Healthy & Synced]
+        APPLY --> DEPLOY[Deployment]
+        APPLY --> SVC[Services]
+        APPLY --> ROUTE[Routes]
+        APPLY --> CM[ConfigMaps]
+        
+        DEPLOY --> PODS[Running Pods]
+        SVC --> PODS
+    end
+    
+    subgraph "Monitoring"
+        PODS -->|metrics| METRICS[Prometheus]
+        ARGO -->|app health| DASHBOARD[ArgoCD Dashboard]
+    end
+    
+    DASHBOARD -->|view status| DEV
+    DASHBOARD -->|view status| OPS
+    
+    style ARGO fill:#ef7b4d
+    style SYNC_DECISION fill:#ffd700
+    style HEALTHY fill:#2ecc71
+    style PODS fill:#326ce5

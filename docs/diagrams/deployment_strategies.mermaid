@@ -1,0 +1,58 @@
+graph TB
+    subgraph "Deployment Trigger"
+        NEW[New Version Ready]
+    end
+    
+    subgraph "Rolling Update Strategy"
+        NEW -->|initiate| ROLL_START[Start Rolling Update]
+        ROLL_START --> POD1[Update Pod 1]
+        POD1 -->|health check| HC1{Healthy?}
+        HC1 -->|Yes| POD2[Update Pod 2]
+        HC1 -->|No| ROLLBACK1[Rollback Pod 1]
+        POD2 -->|health check| HC2{Healthy?}
+        HC2 -->|Yes| POD3[Update Pod 3]
+        HC2 -->|No| ROLLBACK2[Rollback All]
+        POD3 -->|health check| HC3{Healthy?}
+        HC3 -->|Yes| COMPLETE[Deployment Complete]
+        HC3 -->|No| ROLLBACK3[Rollback All]
+    end
+    
+    subgraph "Blue-Green Strategy"
+        NEW -->|alternative| BG_START[Deploy Green Environment]
+        BG_START --> GREEN[Green Pods Running]
+        GREEN -->|test| TEST{Tests Pass?}
+        TEST -->|Yes| SWITCH[Switch Traffic to Green]
+        TEST -->|No| KEEP_BLUE[Keep Blue Active]
+        SWITCH --> MONITOR[Monitor Metrics]
+        MONITOR -->|5min observation| METRICS{Metrics OK?}
+        METRICS -->|Yes| DELETE_BLUE[Remove Blue Pods]
+        METRICS -->|No| INSTANT_SWITCH[Switch Back to Blue]
+    end
+    
+    subgraph "Canary Strategy"
+        NEW -->|gradual| CANARY_START[Deploy Canary - 10%]
+        CANARY_START -->|observe| OBS1[Observe 5min]
+        OBS1 -->|metrics OK| CANARY_50[Scale to 50%]
+        CANARY_50 -->|observe| OBS2[Observe 5min]
+        OBS2 -->|metrics OK| CANARY_100[Scale to 100%]
+        
+        OBS1 -->|errors detected| AUTO_ROLLBACK1[Auto Rollback]
+        OBS2 -->|errors detected| AUTO_ROLLBACK2[Auto Rollback]
+    end
+    
+    subgraph "Monitoring During Deployment"
+        COMPLETE -.->|track| METRICS_DASH[Grafana Dashboard]
+        DELETE_BLUE -.->|track| METRICS_DASH
+        CANARY_100 -.->|track| METRICS_DASH
+        METRICS_DASH -->|alerts| ALERT[Prometheus Alerts]
+    end
+    
+    style COMPLETE fill:#2ecc71
+    style DELETE_BLUE fill:#2ecc71
+    style CANARY_100 fill:#2ecc71
+    style ROLLBACK1 fill:#e74c3c
+    style ROLLBACK2 fill:#e74c3c
+    style ROLLBACK3 fill:#e74c3c
+    style AUTO_ROLLBACK1 fill:#e74c3c
+    style AUTO_ROLLBACK2 fill:#e74c3c
+    style INSTANT_SWITCH fill:#ff6b6b

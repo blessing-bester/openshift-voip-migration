@@ -74,7 +74,8 @@ graph TB
     style PROM fill:#e6522c
     style GRAF fill:#f46800
     style APPS fill:#326ce5
-
+```
+---
 
 **Flow:**  
 1. Developer pushes code → GitHub  

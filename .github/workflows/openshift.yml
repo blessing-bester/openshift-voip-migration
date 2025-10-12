@@ -25,7 +25,7 @@ jobs:
         with:
           file_or_dir: manifests/
       - name: Validate Kubernetes YAML
-        uses: instrumenta/kubeval-action@v2
+        uses: stefanprodan/kubeval-action@master
         with:
           files: manifests/**/*.yaml
       - name: Tekton Pipeline Lint

@@ -32,9 +32,51 @@ It is designed to showcase **99.95% uptime architecture** principles, automation
 ---
 
 ## 🏗️ Architecture
+```mermaid
+graph TB
+    subgraph "Developer Workflow"
+        DEV[Developer] -->|git push| GH[GitHub Repository]
+    end
+    
+    subgraph "OpenShift Cluster"
+        subgraph "CI/CD Layer"
+            GH -->|webhook trigger| TEKTON[Tekton Pipeline]
+            TEKTON -->|build image| BUILD[Build Pod]
+            BUILD -->|push image| REG[Internal Registry]
+        end
+        
+        subgraph "GitOps Layer"
+            GH -->|sync manifests| ARGO[ArgoCD]
+            ARGO -->|deploy| APPS[Application Pods]
+            REG -->|pull image| APPS
+        end
+        
+        subgraph "Monitoring Layer"
+            APPS -->|metrics| PROM[Prometheus]
+            PROM -->|visualize| GRAF[Grafana]
+            PROM -->|alerts| ALERT[Alertmanager]
+            ALERT -->|notify| SLACK[Slack/Email]
+        end
+        
+        subgraph "Ingress Layer"
+            ROUTE[OpenShift Routes] -->|traffic| APPS
+        end
+    end
+    
+    subgraph "External Access"
+        USER[End Users] -->|HTTPS| ROUTE
+    end
+    
+    style DEV fill:#4a90e2
+    style GH fill:#333
+    style TEKTON fill:#ff6d00
+    style ARGO fill:#ef7b4d
+    style PROM fill:#e6522c
+    style GRAF fill:#f46800
+    style APPS fill:#326ce5
 
-![Architecture Diagram](./docs/diagrams/architecture.mermaid)
-
+---
+    
 **Flow:**  
 1. Developer pushes code → GitHub  
 2. Tekton builds & tests → pushes image to OpenShift registry  

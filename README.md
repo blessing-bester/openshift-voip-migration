@@ -75,8 +75,7 @@ graph TB
     style GRAF fill:#f46800
     style APPS fill:#326ce5
 
----
-    
+
 **Flow:**  
 1. Developer pushes code → GitHub  
 2. Tekton builds & tests → pushes image to OpenShift registry  

@@ -1,0 +1,21 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: sample-app
+  namespace: sample-app
+  labels:
+    app: sample-app
+  annotations:
+    haproxy.router.openshift.io/timeout: 60s
+spec:
+  host: sample-app.apps.cluster.example.com
+  to:
+    kind: Service
+    name: sample-app
+    weight: 100
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None

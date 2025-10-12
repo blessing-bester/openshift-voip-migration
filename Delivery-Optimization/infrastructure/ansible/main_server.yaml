@@ -1,7 +1,0 @@
-- name: Configure TransGlobe VM
-  hosts: Main_Server
-  gather_facts: true
-  become: true
-  roles:
-    - k8s_setup
-    - docker_setup

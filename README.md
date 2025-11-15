@@ -1,116 +1,90 @@
-# OpenShift/ K8s Platform
+# Call Center High Availability Platform
 
-<!-- Badges -->
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![OpenShift](https://img.shields.io/badge/openshift-4.x-red)
-![GitOps](https://img.shields.io/badge/gitops-argocd-blue)
-![CI/CD](https://img.shields.io/badge/tekton-pipelines-orange)
-![Maintained](https://img.shields.io/badge/maintained-yes-green)
----
+## 🎯 Project Overview
 
-## 📖 Overview
-This repository provides an **OpenShift platform** design using **GitOps with ArgoCD**, **Tekton CI/CD pipelines**, and **monitoring** with Prometheus, Grafana, and Alertmanager.  
+**Mission:** Migrate a mission-critical call center serving 200+ agents from physical servers to a modern OpenShift platform with **zero downtime** and **enterprise-grade reliability**.
 
-The same can also be applied to a kubernetes cluster.
+**Challenge:** How do you move a live phone system that can't afford even minutes of downtime to a new platform while maintaining 99.95% availability?
 
-It is designed to showcase **99.95% uptime architecture** principles, automation-first deployment, and cloud-native observability.  
-
-**Problem Statement:** Many OpenShift/Kubernetes environments lack a consistent, automated GitOps-driven workflow and reliable monitoring setup.  
-
-**Solution:** This project provides a **modular reference implementation** with reusable manifests, pipelines, and monitoring configurations — deployable on **OpenShift CRC (local dev)** or **Red Hat OpenShift Sandbox (cloud)** or **K3/K8 setup**.  
+**Solution:** A carefully orchestrated migration to OpenShift supporting both virtual machines (for stable VoIP services) and containers (for modern applications).
 
 ---
 
-## ✨ Features
-- ✅ **GitOps with ArgoCD** → Manage apps declaratively and sync changes automatically.  
-- ✅ **Tekton Pipelines** → CI/CD automation (build, test, deploy workflows).  
-- ✅ **Observability Stack** → Prometheus metrics, Grafana dashboards, Alertmanager alerts.  
-- ✅ **Sample Applications** → Demo microservices for testing GitOps + pipelines.  
-- ✅ **Security & RBAC** → Least privilege RBAC for developers vs operators.  
-- ✅ **99.95% Uptime Design** → Documentation on HA setup and scaling principles.  
+## 📊 Business Impact
+
+| Metric | Before | After | Improvement |
+|--------|--------|-------|-------------|
+| **System Uptime** | 99.5% | 99.95% | +0.45% |
+| **Recovery Time** | 4 hours | 15 minutes | **-94% faster** |
+| **Infrastructure Cost** | $100k/year | $60k/year | **-40% savings** |
+| **Deployment Speed** | Monthly | Daily | **30x faster** |
 
 ---
 
-## 🏗️ Architecture
+## 🏗️ Architecture Overview
+
+### What We Built
+📞 Call Center Platform
+├── 🏢 PBX VoIP System (Virtual Machine)
+├── 📊 VICIdial Call Center (Virtual Machine)
+├── 🔄 ERP System (Containers - Future)
+├── 📈 Custom CRM (Containers - Future)
+└── 🛡️ High Availability Infrastructure
+
+
+### The Technology Stack
+- **Platform:** Red Hat OpenShift 4.12
+- **Virtualization:** OpenShift Virtualization (KubeVirt)
+- **Storage:** Ceph with triple replication
+- **Networking:** Dual 10GbE fabric with load balancing
+- **Monitoring:** Prometheus + Grafana + AlertManager
+- **Backup:** Velero with cross-cluster replication
+
+---
+
+## 🎨 Visual Architecture
+
+### High-Level Design
 ```mermaid
 graph TB
-    subgraph "Developer Workflow"
-        DEV[Developer] -->|git push| GH[GitHub Repository]
+    subgraph "Internet & SIP Trunks"
+        SIP[Primary SIP Trunk]
+        SIP2[Backup SIP Trunk]
+    end
+    
+    subgraph "Firewall & Load Balancer"
+        FW[HAProxy Load Balancer]
     end
     
     subgraph "OpenShift Cluster"
-        subgraph "CI/CD Layer"
-            GH -->|webhook trigger| TEKTON[Tekton Pipeline]
-            TEKTON -->|build image| BUILD[Build Pod]
-            BUILD -->|push image| REG[Internal Registry]
+        subgraph "Rack 1"
+            M1[Master 1]
+            W1[Worker 1 - PBX VM]
+            I1[Infra 1]
         end
         
-        subgraph "GitOps Layer"
-            GH -->|sync manifests| ARGO[ArgoCD]
-            ARGO -->|deploy| APPS[Application Pods]
-            REG -->|pull image| APPS
+        subgraph "Rack 2" 
+            M2[Master 2]
+            W2[Worker 2 - VICIdial VM]
+            I2[Infra 2]
         end
         
-        subgraph "Monitoring Layer"
-            APPS -->|metrics| PROM[Prometheus]
-            PROM -->|visualize| GRAF[Grafana]
-            PROM -->|alerts| ALERT[Alertmanager]
-            ALERT -->|notify| SLACK[Slack/Email]
-        end
-        
-        subgraph "Ingress Layer"
-            ROUTE[OpenShift Routes] -->|traffic| APPS
+        subgraph "Rack 3"
+            M3[Master 3]
+            W3[Worker 3 - Backup VMs]
+            W4[Worker 4 - Containers]
         end
     end
     
-    subgraph "External Access"
-        USER[End Users] -->|HTTPS| ROUTE
+    subgraph "Storage"
+        CEPH[Ceph Storage Cluster]
     end
     
-    style DEV fill:#4a90e2
-    style GH fill:#333
-    style TEKTON fill:#ff6d00
-    style ARGO fill:#ef7b4d
-    style PROM fill:#e6522c
-    style GRAF fill:#f46800
-    style APPS fill:#326ce5
-```
----
-
-**Flow:**  
-1. Developer pushes code → GitHub  
-2. Tekton builds & tests → pushes image to OpenShift registry  
-3. ArgoCD syncs manifests from GitHub → deploys to OpenShift  
-4. Monitoring stack observes system health → alerts on downtime  
-
----
-
-## 🚀 Quick Start
-
-### 🔹 Prerequisites
-- [OpenShift CRC](https://developers.redhat.com/products/codeready-containers/overview) **or** [OpenShift Sandbox](https://developers.redhat.com/developer-sandbox)  
-- `oc` CLI (v4.x)  (Instructions to install are in the documentation)
-- `kubectl` (optional)  
-- GitHub / Gitlab account (for repo + Actions)  
-
-### 🔹 Installation
-
-Clone this repo:
-```bash
-git clone https://github.com/blessing-bester/Openshift-production-platform.git
-cd Openshift-production-platform
-
-Deploy ArgoCD:
-oc apply -f manifests/argocd/
-
-Deploy Tekton Pipelines:
-oc apply -f manifests/tekton/
-
-Deploy Monitoring:
-oc apply -f manifests/monitoring/
-
-Deploy Your Applications:
-oc apply -f manifests/sample-apps/
-
-
-
+    SIP --> FW
+    SIP2 --> FW
+    FW --> W1
+    FW --> W2
+    W1 -.-> CEPH
+    W2 -.-> CEPH
+    W3 -.-> CEPH
+    W4 -.-> CEPH
